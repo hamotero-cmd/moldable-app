@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><script type='text/javascript' src='https://1345364738668177.a.metaaiusercontent.com/V1UkMoKbt7JQFdHcZfekrbeYcqZc8V_8rWn8tgQBWm4ACFuw563rz9leYjxr3kCWyWmxzN_uFdf1_CZNd3sKFXqqjMjSBQ499qJ9VE3Rin9YQhG98ApwLJePb10efQeh9Rl2uTl5nXkgFEJJxzrogkPfZSDQdfJSaHzB51Z46yjjo821TI3Dd2aaWTtl5m79rxN7dobdvSoRQtSh0bV9YMAVWUyeasOfXi7loWHhMi5uBzRv_gB7WX3zZhA1EZPUuHrm-F8SkuGxeAD9DJ8VRe3NQj0ouHoUM3hJvpJWOMaUHPh6si1vAr4EggCeQFaQecJyrfKoazzcvlI4sTbgwW04RFX-IOIyH89rFv9AAMDeGL1aQk-h-DmZMxkYAPwwasHjG9B2Bb6HWU9FsTyKfycs3GGMVXST-Dt8lVdNRWth-9gn7gaTRuoGP0ymji6EVaU_c-Xkf3tKXfoMN0n708zBrINcXmgPdrSmJ4U4a4n4Jenr86mr52LWanOOlzMqhZY2zRr9IZ_KAgCkUZXWfE5ytuuSECuNH0_6DNpBMsdX8UJRJNCPzxM5mMM2dpRhjmljiyfG0mTzeKTzZda_Y2Yf3Hnk7wq22SpTg9iNTw-t-6J8IYRssPFB9MRrjk9f__VyCKrzbBRgO1Wgdw'></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vista Previa</title>
+<style>
+body{font-family:system-ui;background:#111;margin:0;padding:8px}
+.card{background:#fff;padding:14px;border-radius:14px;max-width:1000px;margin:0 auto}
+.btn{display:block;width:100%;text-align:center;padding:13px;border-radius:10px;text-decoration:none;font-weight:800;margin-top:8px;box-sizing:border-box}
+.btn-dl{background:#111;color:#fff} .btn-back{background:#e5e7eb;color:#111}
+iframe{width:100%;height:72vh;border:1px solid #ddd;border-radius:10px;margin-top:10px}
+.qr-info{background:#f0fdf4;border:1px solid #bbf7d0;padding:10px;border-radius:10px;margin-top:10px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="card">
+<h2 style="font-size:16px;margin:0 0 8px">PDFs Generados con éxito ✓ - Sistema Dual QR Privado</h2>
+<div class="qr-info" style="background:#fffbeb;border-color:#fcd34d">
+<b>⚠️ Solución privacidad:</b> Se generan 2 PDFs distintos para que cliente no vea QR interno<br><br>
+<b>1. PDF CLIENTE (solo QR cliente):</b><br>
+<code style="background:#fff;padding:3px 6px;border-radius:4px">{{ qr_url }}</code> - Abajo derecha<br>
+Este es el que envías por correo/imprimes para entrega. Solo lleva QR CLIENTE.<br><br>
+<b>2. PDF INTERNO (doble QR):</b><br>
+<code style="background:#fff;padding:3px 6px;border-radius:4px">{{ qr_int_url if qr_int_url is defined else qr_url.replace('/r/','/internal/') }}</code> - Arriba pequeño<br>
+Este se queda en MOLDABLE, no se envía. Lleva QR interno + cliente. Copia amarilla ORIGEN.<br><br>
+<small>ID: {{ file_id }}</small>
+</div>
+
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:10px;border-radius:10px;margin-top:10px">
+<b>📄 PDF CLIENTE - Para email y entrega:</b><br>
+<a class="btn btn-dl" href="/pdf/download/{{ pdf_name }}" style="background:#16a34a">⬇️ Descargar PDF CLIENTE (solo QR cliente)</a>
+<a class="btn btn-dl" href="/pdf/view/{{ pdf_name }}" target="_blank" style="background:#fff;color:#111;border:1px solid #111">🖨️ Ver/Imprimir CLIENTE</a>
+<a class="btn btn-dl" href="{{ qr_url }}" target="_blank" style="background:#2563eb">🔍 Probar QR CLIENTE</a>
+</div>
+
+{% if pdf_name_interno is defined %}
+<div style="background:#fef2f2;border:1px solid #fecaca;padding:10px;border-radius:10px;margin-top:10px">
+<b>🔒 PDF INTERNO - Solo MOLDABLE (no enviar):</b><br>
+<a class="btn btn-dl" href="/pdf/download/{{ pdf_name_interno }}" style="background:#991b1b">⬇️ Descargar PDF INTERNO (doble QR)</a>
+<a class="btn btn-dl" href="/pdf/view/{{ pdf_name_interno }}" target="_blank" style="background:#111">🖨️ Ver/Imprimir INTERNO</a>
+<a class="btn btn-dl" href="{{ qr_int_url }}" target="_blank" style="background:#7c3aed">🔒 Probar QR INTERNO (control)</a>
+</div>
+{% endif %}
+
+<a class="btn btn-back" href="/">← Volver / Nueva carta</a>
+<a class="btn btn-dl" href="/salida/{{ pdf_name }}" style="background:#991b1b">Dar Salida (Cerrar Albarán)</a>
+
+<h3 style="font-size:13px;margin:14px 0 6px">Vista previa PDF CLIENTE:</h3>
+<iframe src="/pdf/view/{{ pdf_name }}"></iframe>
+</div>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><script type='text/javascript' src='https://1339797112558273.a.metaaiusercontent.com/w60LT783_-NxtfVV6dQNDeQ_PbxPufTj5nf9REY8BwJUg6SDgLtOSeA20PR_iZEAscYVtCQEaA3jHEirkLoUTPLGRtF_3LgwcLfaXWQj_SoMtzxP-vnThD0bYbOuwh0PesQJd82gkkrip7qj5nv9EuFouHTx4dkhMLE_eE10BFLJQ3-CHphz06KiRAIUtpcKuhJIx34cjU_l3B2HS_7Uq-4sPxmB7c-WJ0AxhG2KER0015TtNFt8OsLocqjhRybzQXApsNeXKbuIInOMm4FUNJf9ki48xU4PLt3L6WL3hj7EdROv-hFwkOHEDrKsVm4lzVC8qoeNWNZntLcw13YCjEZ0FRJd4BVUAHoZx6caVbhJP-EQOig3e4LtZqHxF3gF1x1Rxk57bPF2RJEkTacumAYlvcsmZnyx6Cw0qExexfqd7YIGG7HZRoV9ysyLvksUsU3eP-VBwTtHvViAZHPMaDnWr2MIORjWVAOX5BrfLYhrJY_T8_2ZKAASbKOYJ3FXodCiftIKNm64pzDJQGfJNhxn41cAoHnurt3XSVJRi3jaG_Kn-UwJMYKjLfamMAQmWlTAcro3Q_7HzScrd17nj4hyLNy_dAHpuUtL0OrDesv2rWgvMVluuPYxIyoxgThuQSDbCARYuvk5biw'></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Carta de Porte - DeCA Cloud Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+:root{--b:#111;--bd:#e5e7eb;--ok:#166534;--bad:#991b1b}
+body{font-family:system-ui,-apple-system;background:#f3f4f6;margin:0;padding:6px}
+.card{background:#fff;padding:14px;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.12);max-width:1000px;margin:0 auto 12px;box-sizing:border-box}
+h1{font-size:18px;text-align:center;margin:6px 0 10px}
+.badge{background:#dcfce7;color:var(--ok);padding:8px;border-radius:8px;text-align:center;font-size:11px;font-weight:800;margin-bottom:10px}
+.grid2{display:grid;grid-template-columns:1fr;gap:8px}
+@media(min-width:768px){.grid2{grid-template-columns:1fr 1fr;gap:12px}}
+label{font-size:11px;font-weight:700;color:#6b7280;display:block;margin-top:6px}
+input,select{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;font-size:16px;box-sizing:border-box}
+.row{border:1px solid var(--bd);padding:10px;border-radius:10px;margin-bottom:10px;background:#fafafa;position:relative}
+.row.bad{border-color:#ef4444;background:#fef2f2}
+.row-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.g{display:grid;grid-template-columns:1fr;gap:8px}
+@media(min-width:768px){.g{grid-template-columns:1.2fr 1fr 0.6fr 1fr;gap:10px}}
+.btn{width:100%;background:var(--b);color:#fff;padding:15px;border:none;border-radius:12px;font-weight:800;cursor:pointer;margin-top:14px;font-size:16px}
+.btn-scan{background:#fff;color:var(--b);border:1px solid var(--b);padding:8px 10px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}
+.btn-outline{background:#fff;color:var(--b);border:1px solid var(--b)}
+.valid{font-size:11px;font-weight:800}
+.recent-item{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--bd);padding:8px;border-radius:8px;margin-bottom:6px;background:#fff}
+.chip{font-size:11px;padding:3px 7px;border-radius:999px}
+.chip-ok{background:#dcfce7;color:var(--ok)} .chip-no{background:#fee2e2;color:var(--bad)}
+#scanner{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;z-index:9999;flex-direction:column;padding:10px}
+#scanner video{width:100%;max-height:60vh;border-radius:12px;background:#000}
+#scanner canvas{display:none}
+.scan-bar{display:flex;gap:8px;margin-top:10px}
+.scan-bar button{flex:1;padding:12px;border-radius:10px;border:none;font-weight:800}
+#scan-result{color:#fff;text-align:center;margin-top:8px;font-size:13px;min-height:20px}
+.sello-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:8px}
+.sello-item{border:1px solid var(--bd);border-radius:8px;padding:6px;text-align:center;background:#fff}
+.sello-item img{max-width:100%;max-height:60px;object-fit:contain}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>CARTA DE PORTE - NUBE PRO</h1>
+<div class="badge">Firma + Sellos + Escáner PDA + QR corto</div>
+
+<div style="display:flex;gap:8px;margin-bottom:10px">
+<a href="/sellos" style="flex:1;text-align:center;padding:10px;background:#f3f4f6;border-radius:8px;text-decoration:none;color:#111;font-size:13px;font-weight:700">🔧 Sellos</a>
+<a href="/calibrar" style="flex:1;text-align:center;padding:10px;background:#0f172a;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700">🎯 Calibrar coordenadas perfectas</a>
+</div>
+
+<div style="background:#f9fafb;padding:10px;border-radius:10px;margin-bottom:12px">
+<b style="font-size:12px">Historial reciente</b>
+{% if recientes %}
+<div style="margin-top:8px">
+{% for f in recientes %}
+<div class="recent-item">
+<div><b style="font-size:12px">{{ f.name }}</b><br><span style="font-size:11px;color:#6b7280">{{ f.mtime }}</span></div>
+<div style="text-align:right">
+<div><span class="chip {{ 'chip-no' if f.salida else 'chip-ok' }}">{{ 'SALIDA' if f.salida else 'BORRADOR' }}</span></div>
+<div style="margin-top:6px">
+<a href="/pdf/view/{{ f.name }}" target="_blank" style="font-size:12px">Ver</a> |
+<a href="/r/{{ f.stem }}" target="_blank" style="font-size:12px">QR</a> |
+<a href="/editar/{{ f.name }}" style="font-size:12px">Editar</a>
+{% if not f.salida %} | <a href="/salida/{{ f.name }}" style="font-size:12px;color:var(--bad)">Salida</a>{% endif %}
+</div></div>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<div style="font-size:11px;color:#6b7280;margin-top:6px">No hay cartas aún</div>
+{% endif %}
+</div>
+
+<form method="post" action="/generar" id="mainForm">
+<div style="background:#0f172a;color:#fff;padding:10px;border-radius:10px;margin-bottom:10px">
+<label style="color:#fff">TIPO DE CARTA *</label>
+<select name="tipo" style="background:#1e293b;color:#fff;border:1px solid #334155">
+<option value="NACIONAL" selected>📄 NACIONAL DESCRIPTIVA MOLDABLE (9 vehículos) - 1 hoja amarilla/origen</option>
+<option value="CMR">🌍 CMR INTERNACIONAL 4 hojas (blanca/azul/rosa/amarilla)</option>
+</select>
+<small style="color:#94a3b8">Nacional usa tu plantilla 4728. CMR usa tu plantilla 4621 con 4 copias.</small>
+</div>
+<div class="grid2">
+<div><label>NUMERO *</label><input name="numero" value="{{ prefill.numero if prefill else 'CP-TEST1' }}" required></div>
+<div><label>CLIENTE *</label><input name="cliente" value="{{ prefill.cliente if prefill else 'AUTOMOTOR VALENCIA S.L.' }}" required></div>
+</div>
+<div style="margin-top:8px"><label>CIF *</label><input name="cif" value="{{ prefill.cif if prefill else 'B12345678' }}" required></div>
+
+<div style="margin-top:12px;background:#fff7ed;border:1px solid #fed7aa;padding:10px;border-radius:10px">
+<label>Sello Origen (DeCA / Empresa)</label>
+<select name="sello_origen">
+<option value="">-- Sin sello (se generará al firmar destino) --</option>
+{% for s in sellos %}
+<option value="{{ s.name }}" {% if prefill and prefill.sello_origen==s.name %}selected{% endif %}>{{ s.cif }} - {{ s.name }}</option>
+{% endfor %}
+</select>
+<small style="color:#9ca3af">Sube sellos en /sellos. Se insertará abajo izquierda del PDF.</small>
+</div>
+
+<div style="margin-top:14px"><h3 style="font-size:14px;margin:4px 0">Origen y Destino</h3>
+<div class="grid2">
+<div>
+<label>Origen</label><input name="origen" value="{{ prefill.origen if prefill else '' }}" placeholder="ORIGEN">
+<label>Dir Origen</label><input name="origen_dir" value="{{ prefill.origen_dir if prefill else '' }}">
+<label>Pob Origen</label><input name="origen_pob" value="{{ prefill.origen_pob if prefill else '' }}">
+</div>
+<div>
+<label>Destino</label><input name="destino" value="{{ prefill.destino if prefill else '' }}" placeholder="DESTINO">
+<label>Dir Destino</label><input name="destino_dir" value="{{ prefill.destino_dir if prefill else '' }}">
+<label>Pob Destino</label><input name="destino_pob" value="{{ prefill.destino_pob if prefill else '' }}">
+</div>
+</div>
+</div>
+
+<div style="margin-top:16px">
+<h3 style="font-size:14px;margin:0 0 8px">Vehículos (9 filas) - usa 📷 para escanear</h3>
+{% for i in rows %}
+{% set mat = prefill['mat_' ~ i] if prefill and prefill['mat_' ~ i] is defined else '' %}
+{% set marca = prefill['marca_' ~ i] if prefill and prefill['marca_' ~ i] is defined else '' %}
+{% set peso = prefill['peso_' ~ i] if prefill and prefill['peso_' ~ i] is defined else '' %}
+{% set obs = prefill['obs_' ~ i] if prefill and prefill['obs_' ~ i] is defined else '' %}
+<div class="row" id="r{{ i }}">
+<div class="row-header"><b>Fila {{ i }}</b><div><span class="valid" id="valid_{{ i }}"></span> <button type="button" class="btn-scan" onclick="openScanner({{ i }})">📷 Escanear</button></div></div>
+<div class="g">
+<div><label>MAT / BASTIDOR</label><input name="mat_{{ i }}" id="mat_{{ i }}" value="{{ mat }}" oninput="checkMat(this,{{ i }})" placeholder="1234ABC o VIN"></div>
+<div><label>MARCA</label><input name="marca_{{ i }}" id="marca_{{ i }}" value="{{ marca }}" placeholder="SEAT"></div>
+<div><label>PESO kg</label><input name="peso_{{ i }}" id="peso_{{ i }}" type="number" inputmode="numeric" value="{{ peso }}" placeholder="1300"></div>
+<div><label>OBS CARGA</label><input name="obs_{{ i }}" id="obs_{{ i }}" value="{{ obs }}" placeholder="daños, llaves..."></div>
+</div>
+</div>
+{% endfor %}
+</div>
+
+<button class="btn" type="submit">GENERAR PDF & QR CORTO</button>
+</form>
+</div>
+
+<div id="scanner">
+<video id="video" autoplay playsinline></video>
+<canvas id="canvas"></canvas>
+<div class="scan-bar">
+<button onclick="capture()" style="background:#fff;color:#111">📸 Capturar y leer</button>
+<button onclick="closeScanner()" style="background:#333;color:#fff">Cerrar</button>
+</div>
+<div id="scan-result">Apunta a la matrícula. Buena luz, sin reflejo.</div>
+</div>
+
+<script>
+let currentRow = 1; let stream = null;
+function checkMat(el,i){
+ let v=el.value.toUpperCase().replace(/\s|-/g,"");
+ let ok=/^(\d{4}[A-Z]{3}|[A-Z]{1,2}\d{4}[A-Z]{0,2}|[A-HJ-NPR-Z0-9]{17})?$/i.test(v);
+ let box=document.getElementById("r"+i); let msg=document.getElementById("valid_"+i);
+ if(!v){box.classList.remove("bad");msg.innerText="";return}
+ if(ok){box.classList.remove("bad");msg.innerText="✓ OK";msg.style.color="green"}else{box.classList.add("bad");msg.innerText="⚠ Revisar";msg.style.color="red"}
+ el.value=v;
+}
+async function openScanner(row){
+ currentRow = row; document.getElementById("scanner").style.display="flex";
+ document.getElementById("scan-result").innerText="Iniciando cámara...";
+ try{ stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}}, audio:false}); document.getElementById("video").srcObject = stream; }catch(e){ document.getElementById("scan-result").innerText="No se pudo abrir cámara: "+e.message; }
+}
+function closeScanner(){ document.getElementById("scanner").style.display="none"; if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;} }
+function extractPlate(text){ if(!text) return null; let t = text.toUpperCase().replace(/[^A-Z0-9]/g," "); let m1 = t.match(/\b\d{4}\s?[A-Z]{3}\b/); if(m1) return m1[0].replace(/\s/g,""); let m2 = t.match(/\b[A-Z]{1,2}\s?\d{4}\s?[A-Z]{0,2}\b/); if(m2) return m2[0].replace(/\s/g,""); let m3 = t.match(/\b[A-HJ-NPR-Z0-9]{17}\b/); if(m3) return m3[0]; return null; }
+async function capture(){
+ const video = document.getElementById("video"); const canvas = document.getElementById("canvas"); const resultEl = document.getElementById("scan-result");
+ canvas.width = video.videoWidth; canvas.height = video.videoHeight; canvas.getContext("2d").drawImage(video,0,0);
+ resultEl.innerText="Leyendo matrícula con OCR... ⏳";
+ try{ const { data:{ text } } = await Tesseract.recognize(canvas, 'eng', { tessedit_char_whitelist:'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', psm:7 }); let plate = extractPlate(text); if(plate){ document.getElementById("mat_"+currentRow).value = plate; checkMat(document.getElementById("mat_"+currentRow), currentRow); resultEl.innerText="✓ Detectado: "+plate+" → Fila "+currentRow; setTimeout(closeScanner, 900); }else{ resultEl.innerText="No detecté matrícula. Texto: "+text.slice(0,80)+"..."; } }catch(e){ resultEl.innerText="Error OCR: "+e.message; }
+}
+function saveDraft(){let d={};document.querySelectorAll("#mainForm input, #mainForm select").forEach(i=>{d[i.name]=i.value});localStorage.setItem("carta_draft_pro",JSON.stringify(d));}
+function loadDraft(){ let raw=localStorage.getItem("carta_draft_pro");if(!raw)return; try{let d=JSON.parse(raw);Object.keys(d).forEach(k=>{let el=document.querySelector("[name='"+k+"']");if(el&&!el.value)el.value=d[k];if(el&&el.name.startsWith("mat_")){let idx=el.name.split("_")[1];checkMat(el,idx)}})}catch(e){} }
+window.addEventListener("load",()=>{loadDraft();document.querySelectorAll("#mainForm input, #mainForm select").forEach(el=>el.addEventListener("input",saveDraft));document.querySelectorAll("#mainForm select").forEach(el=>el.addEventListener("change",saveDraft));});
+</script>
+</body>
+</html>

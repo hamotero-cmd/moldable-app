@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><script type='text/javascript' src='https://1337605269444124.a.metaaiusercontent.com/hust6fVOynTFrtaNaDG3GFP7nkMg1ubuGTcIhPj7W6xI-_7tTBjmWovtx3DubdEUNKuQcmX1nbttMsYGtVsRXQBL7RHKXHJa3IfubXGduv598xKQekIfvywu-G70yL_ad87UyTg811XO0sTs2WYiCTblnGWefxlWFY8KEOfyx5GW9CnolVRAWC61myfD9-LgxUNCKeyikInrt-TtNLjGRlKdqzu4v7sY_Eao8Zjt3tZFFNDbjcTRjt5QHqLFSf_ZUexrTK7iRsjpsCIeUsLj6oVPHbkMEK5X0I7ZHh1bgMVNkuNBs6dpMSj-UvLnXyoN2dMYuHWT9VgTK0kZw9xb7fXLPrk3TGoDgHZbZDL9cRy6_06SUUwbyrXXXfnWNJR_gkIVWQ5VoQvcAMGcmUTwpTzm26Q0ESryynIUIV6sjvfno8sj9I_kOmF3iQtghLQQhf6n4x_zmUR51Cb8HvjV7awm3thf5Bhn5fptPj2sBoT9jdY3Yj5Fn09lHWXr7vLXrXHW_SyRNCkp34868ZpkUqMVUsyZG-wyOw35Onk80EMEM5iEs0iJkmVaVJP7h_598lA_mXcIBMhEYEyZcsM9Q5s55b5rGLbDsT1o89MJdo0lLgSdX8fd0JwnseWYVeOBtAvKWkWDA0I7Es7_'></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Carta {{ file_id }} - Validación + Firma</title>
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+<style>
+body{font-family:system-ui;background:#f3f4f6;margin:0;padding:10px}
+.card{background:#fff;padding:16px;border-radius:14px;max-width:850px;margin:0 auto 12px;box-shadow:0 8px 30px rgba(0,0,0,.1)}
+h1{font-size:18px;margin:0 0 4px} h2{font-size:14px;margin:18px 0 8px;color:#111}
+.badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:800}
+.badge-ok{background:#dcfce7;color:#166534} .badge-no{background:#fee2e2;color:#991b1b} .badge-warn{background:#fef3c7;color:#92400e}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px} @media(max-width:640px){.grid{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;margin-top:8px} th,td{border:1px solid #e5e7eb;padding:8px;font-size:13px;text-align:left} th{background:#f9fafb;font-size:11px}
+small{color:#6b7280} .qr-box{background:#f9fafb;border:1px dashed #d1d5db;padding:12px;border-radius:10px;margin-top:12px;word-break:break-all;font-size:12px}
+input,select{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;font-size:16px;box-sizing:border-box;margin-top:4px}
+label{font-size:11px;font-weight:700;color:#6b7280;display:block;margin-top:8px}
+.btn{display:inline-block;padding:12px 16px;border-radius:10px;text-decoration:none;font-weight:800;border:none;cursor:pointer}
+.btn-black{background:#111;color:#fff} .btn-green{background:#16a34a;color:#fff} .btn-red{background:#991b1b;color:#fff} .btn-outline{background:#fff;color:#111;border:1px solid #111}
+.sig-wrap{border:2px dashed #d1d5db;border-radius:12px;position:relative;background:#fff}
+.sig-wrap canvas{width:100%;height:220px;display:block;border-radius:12px;touch-action:none}
+.sig-actions{display:flex;gap:8px;margin-top:8px}
+.firma-preview{max-width:100%;border:1px solid #e5e7eb;border-radius:8px;margin-top:8px}
+.sello-img{max-height:70px;max-width:150px;object-fit:contain;border:1px solid #e5e7eb;border-radius:6px;padding:4px;background:#fff}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>🚛 Carta de Porte: {{ data.numero }}</h1>
+<small>ID: {{ file_id }} | {{ meta.created_at or '' }} | Hash: {{ (firma_info.hash_carta[:10] if firma_info and firma_info.hash_carta else (meta.qr_payload_full[:20] if meta.qr_payload_full else '')) }}</small>
+<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+<span class="badge {{ 'badge-no' if salida else 'badge-ok' }}">{{ 'SALIDA DADA' if salida else 'BORRADOR / EN CURSO' }}</span>
+{% if firmado %}<span class="badge badge-ok">✓ FIRMADO Y SELLADO</span>{% else %}<span class="badge badge-warn">PENDIENTE FIRMA</span>{% endif %}
+</div>
+
+<h2>Cliente</h2>
+<div class="grid">
+<div><b>{{ data.cliente }}</b><br><small>CIF: {{ data.cif }}</small><br>{% if meta.sello_origen %}<small>Sello origen:</small><br><img src="/sellos/view/{{ meta.sello_origen }}" class="sello-img">{% endif %}</div>
+<div><small>QR URL:</small><br><a href="{{ meta.qr_url }}">{{ meta.qr_url }}</a><br><small>API:</small> <a href="/api/r/{{ file_id }}">JSON</a></div>
+</div>
+
+<h2>Origen → Destino</h2>
+<div class="grid">
+<div><b>Origen:</b> {{ data.origen }}<br>{{ data.origen_dir }}<br>{{ data.origen_pob }}</div>
+<div><b>Destino:</b> {{ data.destino }}<br>{{ data.destino_dir }}<br>{{ data.destino_pob }}</div>
+</div>
+
+<h2>Vehículos ({{ vehiculos|length }})</h2>
+{% if vehiculos %}
+<table><tr><th>MAT / BASTIDOR</th><th>MARCA</th><th>PESO</th><th>OBS</th></tr>
+{% for v in vehiculos %}<tr><td><b>{{ v.mat }}</b></td><td>{{ v.marca }}</td><td>{{ v.peso }} kg</td><td>{{ v.obs }}</td></tr>{% endfor %}
+</table>
+{% else %}<small>No hay vehículos</small>{% endif %}
+
+{% if firma_info %}
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:12px;border-radius:10px;margin-top:16px">
+<h2 style="margin-top:0">✓ Entrega Firmada</h2>
+<div class="grid">
+<div>
+<b>{{ firma_info.nombre }}</b><br><small>DNI: {{ firma_info.dni }} | IP: {{ firma_info.ip }}<br>{{ firma_info.timestamp }}<br>Lat/Lon: {{ firma_info.lat }}, {{ firma_info.lon }}</small><br>
+<img src="/sellos/view/{{ firma_info.firma_png }}" class="firma-preview">
+</div>
+<div>
+{% if firma_info.sello_destino %}<small>Sello destino:</small><br><img src="/sellos/view/{{ firma_info.sello_destino }}" class="sello-img"><br>{% endif %}
+<small>Hash carta: {{ firma_info.hash_carta[:16] }}...</small><br><br>
+<a class="btn btn-green" href="/pdf/view/{{ file_id }}_ENTREGA.pdf" target="_blank">📄 Ver PDF con Firma + Sellos</a>
+<a class="btn btn-outline" href="/pdf/download/{{ file_id }}_ENTREGA.pdf" style="margin-top:6px">⬇️ Descargar entrega</a>
+</div>
+</div>
+</div>
+{% else %}
+<div style="background:#fffbeb;border:1px solid #fcd34d;padding:14px;border-radius:12px;margin-top:18px">
+<h2 style="margin:0 0 8px">✍️ Firmar y Sellar Entrega (Opción B DeCA)</h2>
+<small>Esta firma cumple eIDAS firma simple + evidencias. Se guarda IP, fecha servidor, hash y opcional GPS y sello empresa.</small>
+
+<form method="post" action="/r/{{ file_id }}/firmar" enctype="multipart/form-data" id="firmaForm" style="margin-top:12px">
+<label>Nombre completo *</label><input name="nombre" required placeholder="Nombre de quien recibe">
+<label>DNI / NIF</label><input name="dni" placeholder="12345678A">
+<div class="grid">
+<div>
+<label>Sello existente (opcional)</label>
+<select name="sello_destino_existente">
+<option value="">-- Sin sello / subir nuevo --</option>
+{% for s in sellos %}<option value="{{ s.name }}">{{ s.cif }} - {{ s.name }}</option>{% endfor %}
+</select>
+</div>
+<div>
+<label>Subir sello nuevo PNG/JPG (opcional)</label><input type="file" name="sello_destino_file" accept=".png,.jpg,.jpeg">
+</div>
+</div>
+
+<label>Firma * (dibuja con el dedo)</label>
+<div class="sig-wrap"><canvas id="sig-canvas"></canvas></div>
+<div class="sig-actions">
+<button type="button" class="btn btn-outline" onclick="sigPad.clear()">🗑️ Borrar</button>
+<button type="button" class="btn btn-outline" onclick="getLocation()">📍 Añadir GPS</button>
+</div>
+<input type="hidden" name="firma_b64" id="firma_b64" required>
+<input type="hidden" name="lat" id="lat"><input type="hidden" name="lon" id="lon">
+<small id="gps-status" style="display:block;margin-top:6px;color:#6b7280"></small>
+
+<div style="margin-top:14px">
+<button type="submit" class="btn btn-black" style="width:100%;padding:15px">✅ FIRMAR Y CERRAR ALBARÁN</button>
+</div>
+</form>
+</div>
+<script>
+let canvas = document.getElementById('sig-canvas');
+function resizeCanvas(){ let ratio = Math.max(window.devicePixelRatio || 1, 1); canvas.width = canvas.offsetWidth * ratio; canvas.height = 220 * ratio; canvas.getContext('2d').scale(ratio,ratio); }
+window.addEventListener('resize', resizeCanvas); resizeCanvas();
+let sigPad = new SignaturePad(canvas, {backgroundColor:'rgba(255,255,255,0)', penColor:'#111'});
+document.getElementById('firmaForm').addEventListener('submit', function(e){
+ if(sigPad.isEmpty()){ alert('Debes firmar'); e.preventDefault(); return; }
+ document.getElementById('firma_b64').value = sigPad.toDataURL('image/png');
+});
+function getLocation(){
+ let el=document.getElementById('gps-status');
+ if(!navigator.geolocation){ el.innerText='Geolocalización no soportada'; return; }
+ el.innerText='Obteniendo GPS...';
+ navigator.geolocation.getCurrentPosition(pos=>{
+  document.getElementById('lat').value = pos.coords.latitude.toFixed(6);
+  document.getElementById('lon').value = pos.coords.longitude.toFixed(6);
+  el.innerText='📍 GPS: '+pos.coords.latitude.toFixed(5)+', '+pos.coords.longitude.toFixed(5);
+ }, err=>{ el.innerText='Error GPS: '+err.message; });
+}
+</script>
+{% endif %}
+
+<div class="qr-box">
+<b>Validación DeCA:</b> Si esta página carga desde QR, la carta es válida y está en nube.<br><br>
+<b>PDF original:</b> <a href="/pdf/view/{{ meta.pdf }}">{{ meta.pdf }}</a> {% if firmado %} | <b>PDF entrega:</b> <a href="/pdf/view/{{ file_id }}_ENTREGA.pdf">{{ file_id }}_ENTREGA.pdf</a>{% endif %}
+</div>
+
+<div style="margin-top:14px;display:flex;gap:8px">
+<a href="/" class="btn btn-outline">← Volver al gestor</a>
+<a href="/pdf/view/{{ file_id }}.pdf" target="_blank" class="btn btn-black">Ver PDF original</a>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+pymupdf
+qrcode[pil]
+python-multipart
+jinja2
+pydantic

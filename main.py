@@ -31,6 +31,14 @@ QR_RECT = fitz.Rect(5, 2, 60, 57)  # izq por cima Guardia Civil, sin pisar MOLDA
 MOLDABLE_RECT = fitz.Rect(65, 8, 200, 45)  # MOLDABLE movido derecha QR
 
 app = FastAPI(title="DeCA Carta de Porte Cloud Pro")
+@app.get("/health")
+async def health():
+    return {"status": "ok", "qr_rect": [5, 2, 60, 57], "moldable_rect": [65, 8, 200, 45]}
+
+def list_sellos():
+    sellos_dir = STORAGE_DIR / "sellos"
+    sellos_dir.mkdir(exist_ok=True)
+    return []
 templates = Jinja2Templates(directory=str(TPL_DIR.parent / "templates" if (TPL_DIR.parent / "templates").exists() else BASE_DIR / "templates"))
 # Fallback para estructura /mnt/data
 if not Path(templates.directory).exists():
@@ -252,7 +260,8 @@ async def editar(request: Request, name: str):
         "request": request,
         "prefill": data,
         "recientes": list_recent(),
-        "rows": range(1,10)
+        "rows": range(1,10),
+        "sellos": []
     })
 
 @app.post("/generar", response_class=HTMLResponse)

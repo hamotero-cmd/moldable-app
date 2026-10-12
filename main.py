@@ -197,7 +197,17 @@ class CartaPorte(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request":request,"prefill":None,"recientes":list_recent(),"rows":range(1,10),"sellos":list_sellos()})
+    try:
+        return templates.TemplateResponse("index.html", {
+            "request": request,
+            "prefill": None,
+            "recientes": list_recent(),
+            "rows": range(1, 10),
+            "sellos": list_sellos()
+        })
+    except Exception as e:
+        import traceback
+        return HTMLResponse(f"<h3>Error capturado:</h3><pre>{traceback.format_exc()}</pre>", status_code=500)
 
 @app.get("/editar/{name}", response_class=HTMLResponse)
 async def editar(request: Request, name: str):
@@ -209,7 +219,6 @@ async def editar(request: Request, name: str):
 @app.post("/generar", response_class=HTMLResponse)
 async def generar(request: Request, numero: str = Form(...), cliente: str = Form(...), cif: str = Form(...), origen: str = Form(""), origen_dir: str = Form(""), origen_pob: str = Form(""), destino: str = Form(""), destino_dir: str = Form(""), destino_pob: str = Form("")):
     form=await request.form()
-    # Modificación aplicada aquí para limpiar y evitar errores de tipo hasheable en Jinja
     raw={str(k): str(v).strip() for k,v in form.items()}
     vehiculos=[]
     for i in range(1,10):

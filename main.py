@@ -209,7 +209,8 @@ async def editar(request: Request, name: str):
 @app.post("/generar", response_class=HTMLResponse)
 async def generar(request: Request, numero: str = Form(...), cliente: str = Form(...), cif: str = Form(...), origen: str = Form(""), origen_dir: str = Form(""), origen_pob: str = Form(""), destino: str = Form(""), destino_dir: str = Form(""), destino_pob: str = Form("")):
     form=await request.form()
-    raw={k:str(v).strip() for k,v in form.items()}
+    # Modificación aplicada aquí para limpiar y evitar errores de tipo hasheable en Jinja
+    raw={str(k): str(v).strip() for k,v in form.items()}
     vehiculos=[]
     for i in range(1,10):
         mat=raw.get(f"mat_{i}","")

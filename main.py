@@ -11,7 +11,7 @@ from pydantic import BaseModel, field_validator
 BASE_DIR = Path(__file__).parent
 TPL_DIR = BASE_DIR / "templates"
 STORAGE_DIR = BASE_DIR / "storage"
-STORAGE_DIR.mkdir(exist_ok=True)
+STORAGE_DIR.mkdir(exist_ok=True, parents=True)
 (BASE_DIR / "storage" / "sellos").mkdir(parents=True, exist_ok=True)
 
 ROWS_Y = [
@@ -24,18 +24,19 @@ ROWS_Y = [
 QR_RECT = fitz.Rect(5, 2, 60, 57)
 MOLDABLE_RECT = fitz.Rect(65, 8, 200, 45)
 
-# Definición principal de la aplicación FastAPI requerida por Uvicorn
+# Instancia principal obligatoria para Uvicorn
 app = FastAPI(title="DeCA Carta de Porte Cloud Pro")
 
 @app.get("/health")
 async def health():
-    return {"status":"ok","qr":[5,2,60,57],"moldable":[65,8,200,45]}
+    return {"status": "ok"}
 
 @app.get("/healthz")
 async def healthz():
-    return {"status":"ok"}
+    return {"status": "ok"}
 
-templates = Jinja2Templates(directory=str(TPL_DIR if TPL_DIR.exists() else BASE_DIR / "templates"))
+templates = Jinja2Templates(directory=str(TPL_DIR if TPL_DIR.exists() else BASE_DIR))
+templates.env.cache = None
 
 def list_sellos():
     return []
@@ -48,15 +49,15 @@ def safe_storage_path(name: str) -> Path:
     clean = Path(name).name
     p = (STORAGE_DIR / clean).resolve()
     if not str(p).startswith(str(STORAGE_DIR.resolve())):
-        raise HTTPException(400,"Nombre no valido")
+        raise HTTPException(400, "Nombre no valido")
     if not p.exists():
-        raise HTTPException(404,"Fichero no existe")
+        raise HTTPException(404, "Fichero no existe")
     return p
 
 def build_payload(carta):
     veh = [{"mat": v.mat, "marca": v.marca, "obs": v.obs, "peso": v.peso} for v in carta.vehiculos if v.mat or v.marca]
-    payload = {"t":"DECA","v":"2","n":carta.numero,"cif":carta.cif,"cli":carta.cliente,"f":datetime.now().isoformat(timespec="seconds"),"veh":veh,"ori":carta.origen,"des":carta.destino}
-    return json.dumps(payload, ensure_ascii=False, separators=(",",":"))
+    payload = {"t": "DECA", "v": "2", "n": carta.numero, "cif": carta.cif, "cli": carta.cliente, "f": datetime.now().isoformat(timespec="seconds"), "veh": veh, "ori": carta.origen, "des": carta.destino}
+    return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
 def clean_text(page, outer):
     inner = fitz.Rect(outer.x0+2, outer.y0+1.2, outer.x1-2, outer.y1-1.2)
@@ -67,37 +68,38 @@ def clean_area(page, rect):
 
 def write_centered(page, x0, x1, y, text, fs=8.5, bold=False):
     if not text: return
-    t=str(text).strip()
+    t = str(text).strip()
     if not t: return
-    if len(t)>24: fs=max(fs-1.5,6.5)
-    fn="hebo" if bold else "helv"
-    try: w=fitz.Font(fn).text_length(t,fontsize=fs)
-    except: w=len(t)*fs*0.52
-    x=((x0+x1)/2)-(w/2)
-    page.insert_text((x,y), t, fontsize=fs, fontname=fn, overlay=True)
+    if len(t) > 24: fs = max(fs - 1.5, 6.5)
+    fn = "hebo" if bold else "helv"
+    try: w = fitz.Font(fn).text_length(t, fontsize=fs)
+    except: w = len(t) * fs * 0.52
+    x = ((x0 + x1) / 2) - (w / 2)
+    page.insert_text((x, y), t, fontsize=fs, fontname=fn, overlay=True)
 
 def write_obs(page, x0, y0, x1, y1, obs_text, peso_text):
     if not obs_text and not peso_text: return
-    r_total=fitz.Rect(x0+5, y0+1, x1-5, y1-3)
+    r_total = fitz.Rect(x0+5, y0+1, x1-5, y1-3)
     clean_area(page, r_total)
     if obs_text:
-        r_obs=fitz.Rect(x0+5, y0+2, x1-5, y1-13)
-        fs=6.5 if len(str(obs_text))<60 else 5.5
+        r_obs = fitz.Rect(x0+5, y0+2, x1-5, y1-13)
+        fs = 6.5 if len(str(obs_text)) < 60 else 5.5
         page.insert_textbox(r_obs, str(obs_text).strip(), fontsize=fs, fontname="helv", align=0, overlay=True)
     if peso_text:
-        r_peso=fitz.Rect(x1-72, y1-11, x1-4, y1-2)
+        r_peso = fitz.Rect(x1-72, y1-11, x1-4, y1-2)
         page.draw_rect(r_peso, color=(0,0,0), fill=(0.95,0.95,0.95), width=0.5, overlay=True)
         page.insert_text((r_peso.x0+3, r_peso.y0+6.5), f"PESO: {peso_text} kg", fontsize=6.5, fontname="helv", overlay=True)
 
 def generar_pdf(carta, raw_data):
-    tpl = BASE_DIR / "templates" / "carta_porte_original.pdf"
+    tpl = TPL_DIR / "carta_porte_original.pdf"
     if not tpl.exists():
-        tpl = Path("templates/carta_porte_original.pdf")
+        tpl = BASE_DIR / "carta_porte_original.pdf"
     if not tpl.exists():
-        raise HTTPException(500, f"Plantilla no encontrada {tpl}")
-    doc=fitz.open(tpl)
+        raise HTTPException(500, f"Plantilla no encontrada en {TPL_DIR}")
+    
+    doc = fitz.open(tpl)
     try:
-        page=doc[0]
+        page = doc[0]
         if carta.numero:
             clean_text(page, fitz.Rect(450,30,560,52))
             page.insert_text((485,42), carta.numero.upper(), fontsize=11, fontname="hebo", overlay=True)
@@ -125,31 +127,34 @@ def generar_pdf(carta, raw_data):
         if carta.destino_pob:
             clean_text(page, fitz.Rect(330,200,570,218))
             page.insert_textbox(fitz.Rect(395,201,566,217), carta.destino_pob, fontsize=8, fontname="helv", align=0, overlay=True)
-        for i,(ym,ymod,yo) in enumerate(ROWS_Y, start=1):
-            v=carta.vehiculos[i-1] if i-1 < len(carta.vehiculos) else VehiculoRow()
+        
+        for i, (ym, ymod, yo) in enumerate(ROWS_Y, start=1):
+            v = carta.vehiculos[i-1] if i-1 < len(carta.vehiculos) else VehiculoRow()
             if not (v.mat or v.marca or v.obs or v.peso): continue
             if v.mat:
-                clean_area(page, fitz.Rect(115,ym-6,312,ym+10))
+                clean_area(page, fitz.Rect(115, ym-6, 312, ym+10))
                 write_centered(page, 115, 312, ym+4, v.mat, fs=9, bold=True)
             if v.marca:
-                clean_area(page, fitz.Rect(115,ymod-6,312,ymod+10))
+                clean_area(page, fitz.Rect(115, ymod-6, 312, ymod+10))
                 write_centered(page, 115, 312, ymod+4, v.marca, fs=8)
             if v.obs or v.peso:
                 write_obs(page, 370, yo+11, 575, yo+40, v.obs, str(v.peso or ""))
-        payload=build_payload(carta)
-        qr=qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=10, border=1)
+        
+        payload = build_payload(carta)
+        qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=10, border=1)
         qr.add_data(payload)
         qr.make(fit=True)
-        img=qr.make_image(fill_color="black", back_color="white")
-        buf=io.BytesIO()
+        img = qr.make_image(fill_color="black", back_color="white")
+        buf = io.BytesIO()
         img.save(buf, format="PNG")
         clean_area(page, QR_RECT)
         page.insert_image(QR_RECT, stream=buf.getvalue())
         clean_area(page, MOLDABLE_RECT)
         page.insert_textbox(MOLDABLE_RECT, "MOLDABLE SL", fontsize=8, fontname="hebo", align=0, overlay=True)
-        out=STORAGE_DIR / f"CP_{sanitize_filename(carta.numero)}_{datetime.now():%Y%m%d_%H%M%S}.pdf"
+        
+        out = STORAGE_DIR / f"CP_{sanitize_filename(carta.numero)}_{datetime.now():%Y%m%d_%H%M%S}.pdf"
         doc.save(out, garbage=4, deflate=True, clean=True)
-        with open(out.with_suffix('.json'),'w',encoding='utf-8') as jf:
+        with open(out.with_suffix('.json'), 'w', encoding='utf-8') as jf:
             json.dump(raw_data, jf, ensure_ascii=False, indent=2)
         return out
     finally:
@@ -159,11 +164,9 @@ def is_salida(pdf_path: Path):
     return (pdf_path.parent / (pdf_path.stem + '.salida')).exists()
 
 def list_recent():
-    files=sorted(STORAGE_DIR.glob("CP_*.pdf"), key=lambda f: f.stat().st_mtime, reverse=True)[:15]
-    result=[]
-    for f in files:
-        result.append({"name":f.name,"salida":is_salida(f),"mtime":datetime.fromtimestamp(f.stat().st_mtime).strftime("%d/%m %H:%M"),"stem":f.stem})
-    return result
+    if not STORAGE_DIR.exists(): return []
+    files = sorted(STORAGE_DIR.glob("CP_*.pdf"), key=lambda f: f.stat().st_mtime, reverse=True)[:15]
+    return [{"name": f.name, "salida": is_salida(f), "mtime": datetime.fromtimestamp(f.stat().st_mtime).strftime("%d/%m %H:%M"), "stem": f.stem} for f in files]
 
 class VehiculoRow(BaseModel):
     mat: str = ""
@@ -174,7 +177,7 @@ class VehiculoRow(BaseModel):
     @classmethod
     def clean_mat(cls, v):
         if not v: return ""
-        v=re.sub(r'[\s\-]+','', str(v).upper())
+        v = re.sub(r'[\s\-]+', '', str(v).upper())
         if not re.match(r'^(\d{4}[A-Z]{3}|[A-Z]{1,2}\d{4}[A-Z]{0,2}|[A-HJ-NPR-Z0-9]{17})?$', v, re.I):
             raise ValueError(f'Matricula no valida: {v}')
         return v
@@ -190,7 +193,7 @@ class CartaPorte(BaseModel):
     destino_dir: str = ""
     destino_pob: str = ""
     vehiculos: List[VehiculoRow]
-    @field_validator('numero','cliente','cif')
+    @field_validator('numero', 'cliente', 'cif')
     @classmethod
     def not_empty(cls, v):
         if not str(v).strip(): raise ValueError('Obligatorio')
@@ -208,56 +211,56 @@ async def index(request: Request):
 
 @app.get("/editar/{name}", response_class=HTMLResponse)
 async def editar(request: Request, name: str):
-    p=safe_storage_path(Path(name).stem + ".json")
-    with open(p,'r',encoding='utf-8') as f:
-        data=json.load(f)
-    return templates.TemplateResponse("index.html", {"request":request,"prefill":data,"recientes":list_recent(),"rows":range(1,10),"sellos":list_sellos()})
+    p = safe_storage_path(Path(name).stem + ".json")
+    with open(p, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    return templates.TemplateResponse("index.html", {"request": request, "prefill": data, "recientes": list_recent(), "rows": range(1, 10), "sellos": list_sellos()})
 
 @app.post("/generar", response_class=HTMLResponse)
 async def generar(request: Request, numero: str = Form(...), cliente: str = Form(...), cif: str = Form(...), origen: str = Form(""), origen_dir: str = Form(""), origen_pob: str = Form(""), destino: str = Form(""), destino_dir: str = Form(""), destino_pob: str = Form("")):
-    form=await request.form()
-    raw={str(k): str(v).strip() for k,v in form.items()}
-    vehiculos=[]
-    for i in range(1,10):
-        mat=raw.get(f"mat_{i}","")
-        marca=raw.get(f"marca_{i}","")
-        peso_raw=raw.get(f"peso_{i}","")
-        obs=raw.get(f"obs_{i}","")
+    form = await request.form()
+    raw = {str(k): str(v).strip() for k, v in form.items()}
+    vehiculos = []
+    for i in range(1, 10):
+        mat = raw.get(f"mat_{i}", "")
+        marca = raw.get(f"marca_{i}", "")
+        peso_raw = raw.get(f"peso_{i}", "")
+        obs = raw.get(f"obs_{i}", "")
         if not (mat or marca or peso_raw or obs):
-            vehiculos.append(VehiculoRow(mat="",marca="",peso=None,obs=""))
+            vehiculos.append(VehiculoRow(mat="", marca="", peso=None, obs=""))
             continue
         try:
-            peso=int(peso_raw) if peso_raw else None
+            peso = int(peso_raw) if peso_raw else None
         except:
-            raise HTTPException(400,f"Fila {i}: peso debe ser numero")
+            raise HTTPException(400, f"Fila {i}: peso debe ser numero")
         if (mat or marca) and not peso:
-            raise HTTPException(400,f"Fila {i}: PESO obligatorio")
+            raise HTTPException(400, f"Fila {i}: PESO obligatorio")
         try:
-            vehiculos.append(VehiculoRow(mat=mat,marca=marca,peso=peso,obs=obs))
+            vehiculos.append(VehiculoRow(mat=mat, marca=marca, peso=peso, obs=obs))
         except Exception as e:
-            raise HTTPException(400,f"Fila {i}: {e}")
+            raise HTTPException(400, f"Fila {i}: {e}")
     try:
-        carta=CartaPorte(numero=numero,cliente=cliente,cif=cif,origen=origen,origen_dir=origen_dir,origen_pob=origen_pob,destino=destino,destino_dir=destino_dir,destino_pob=destino_pob,vehiculos=vehiculos)
+        carta = CartaPorte(numero=numero, cliente=cliente, cif=cif, origen=origen, origen_dir=origen_dir, origen_pob=origen_pob, destino=destino, destino_dir=destino_dir, destino_pob=destino_pob, vehiculos=vehiculos)
     except Exception as e:
-        raise HTTPException(400,f"Error validacion: {e}")
-    out=generar_pdf(carta,raw)
-    return templates.TemplateResponse("preview.html", {"request":request,"pdf_name":out.name,"file_id":out.stem,"qr_url":f"/r/{out.stem}","qr_int_url":f"/r/{out.stem}"})
+        raise HTTPException(400, f"Error validacion: {e}")
+    out = generar_pdf(carta, raw)
+    return templates.TemplateResponse("preview.html", {"request": request, "pdf_name": out.name, "file_id": out.stem, "qr_url": f"/r/{out.stem}", "qr_int_url": f"/r/{out.stem}"})
 
 @app.get("/salida/{name}")
 async def salida(name: str):
-    pdf=safe_storage_path(name)
-    marker=pdf.parent / (pdf.stem + '.salida')
-    marker.write_text(datetime.now().isoformat(),encoding='utf-8')
-    return RedirectResponse(url="/",status_code=303)
+    pdf = safe_storage_path(name)
+    marker = pdf.parent / (pdf.stem + '.salida')
+    marker.write_text(datetime.now().isoformat(), encoding='utf-8')
+    return RedirectResponse(url="/", status_code=303)
 
 @app.get("/pdf/view/{name}")
 async def view_pdf(name: str):
-    path=safe_storage_path(name)
+    path = safe_storage_path(name)
     return FileResponse(path, media_type="application/pdf", headers={"Content-Disposition": f'inline; filename="{path.name}"'})
 
 @app.get("/pdf/download/{name}")
 async def download_pdf(name: str):
-    path=safe_storage_path(name)
+    path = safe_storage_path(name)
     return FileResponse(path, media_type="application/pdf", filename=path.name)
 
 @app.get("/sellos", response_class=HTMLResponse)
@@ -266,9 +269,9 @@ async def sellos_page(request: Request):
 
 @app.get("/calibrar", response_class=HTMLResponse)
 async def calibrar_page(request: Request):
-    return HTMLResponse('<a href="/">Volver</a><h3>Calibrar OK - QR [5,2,60,57] MOLDABLE [65,8,200,45]</h3>')
+    return HTMLResponse('<a href="/">Volver</a><h3>Calibrar OK</h3>')
 
-if __name__=="__main__":
+if __name__ == "__main__":
     import uvicorn
-    port=int(os.environ.get("PORT",8000))
+    port = int(os.environ.get("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port)

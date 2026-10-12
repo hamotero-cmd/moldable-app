@@ -201,8 +201,7 @@ class CartaPorte(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse("index.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "index.html", {
         "prefill": None,
         "recientes": list_recent(),
         "rows": range(1, 10),
@@ -214,8 +213,7 @@ async def editar(request: Request, name: str):
     p = safe_storage_path(Path(name).stem + ".json")
     with open(p, 'r', encoding='utf-8') as f:
         data = json.load(f)
-    return templates.TemplateResponse("index.html", {"request": request, "prefill": data, "recientes": list_recent(), "rows": range(1, 10), "sellos": list_sellos()})
-
+    return templates.TemplateResponse(request, "index.html", {"prefill": data, "recientes": list_recent(), "rows": range(1, 10), "sellos": list_sellos()})
 @app.post("/generar", response_class=HTMLResponse)
 async def generar(request: Request, numero: str = Form(...), cliente: str = Form(...), cif: str = Form(...), origen: str = Form(""), origen_dir: str = Form(""), origen_pob: str = Form(""), destino: str = Form(""), destino_dir: str = Form(""), destino_pob: str = Form("")):
     form = await request.form()
@@ -244,8 +242,7 @@ async def generar(request: Request, numero: str = Form(...), cliente: str = Form
     except Exception as e:
         raise HTTPException(400, f"Error validacion: {e}")
     out = generar_pdf(carta, raw)
-    return templates.TemplateResponse("preview.html", {"request": request, "pdf_name": out.name, "file_id": out.stem, "qr_url": f"/r/{out.stem}", "qr_int_url": f"/r/{out.stem}"})
-
+    return templates.TemplateResponse(request, "preview.html", {"pdf_name": out.name, "file_id": out.stem, "qr_url": f"/r/{out.stem}", "qr_int_url": f"/r/{out.stem}"})
 @app.get("/salida/{name}")
 async def salida(name: str):
     pdf = safe_storage_path(name)

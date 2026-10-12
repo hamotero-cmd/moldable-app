@@ -2,6 +2,6 @@ fastapi
 uvicorn
 jinja2
 python-multipart
-PyMuPDF
-qrcode
+pymupdf
+qrcode[pil]
 pydantic

@@ -34,7 +34,9 @@ async def health():
 async def healthz():
     return {"status":"ok"}
 
+# Inicialización de templates con caché desactivada para evitar el conflicto de diccionarios
 templates = Jinja2Templates(directory=str(TPL_DIR if TPL_DIR.exists() else BASE_DIR / "templates"))
+templates.env.cache = None
 
 def list_sellos():
     return []
@@ -197,17 +199,13 @@ class CartaPorte(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    try:
-        return templates.TemplateResponse("index.html", {
-            "request": request,
-            "prefill": None,
-            "recientes": list_recent(),
-            "rows": range(1, 10),
-            "sellos": list_sellos()
-        })
-    except Exception as e:
-        import traceback
-        return HTMLResponse(f"<h3>Error capturado:</h3><pre>{traceback.format_exc()}</pre>", status_code=500)
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "prefill": None,
+        "recientes": list_recent(),
+        "rows": range(1, 10),
+        "sellos": list_sellos()
+    })
 
 @app.get("/editar/{name}", response_class=HTMLResponse)
 async def editar(request: Request, name: str):
